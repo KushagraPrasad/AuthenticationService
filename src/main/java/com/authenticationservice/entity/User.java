@@ -1,5 +1,6 @@
 package com.authenticationservice.entity;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -20,7 +21,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
-public class User implements UserDetails {
+public class User implements UserDetails, Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -51,6 +54,23 @@ public class User implements UserDetails {
 	@OneToOne(cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
 	private Role role;
+
+	@Column(nullable = false)
+	private boolean isEmailVerified = false;
+
+	@Column(nullable = true)
+	private String otp;
+
+	@Column(nullable = false)
+	private boolean otpVerified = false;
+
+	@Column(nullable = true)
+	private Date otpExpiration;
+
+	public User() {
+		this.isEmailVerified = false;
+		this.otpVerified = false;
+	}
 
 	public long getId() {
 		return id;
@@ -128,6 +148,38 @@ public class User implements UserDetails {
 	public User setRole(Role role) {
 		this.role = role;
 		return this;
+	}
+
+	public boolean getIsEmailVerified() {
+		return isEmailVerified;
+	}
+
+	public void setIsEmailVerified(boolean isEmailVerified) {
+		this.isEmailVerified = isEmailVerified;
+	}
+
+	public String getOtp() {
+		return otp;
+	}
+
+	public void setOtp(String otp) {
+		this.otp = otp;
+	}
+
+	public boolean getOtpVerified() {
+		return otpVerified;
+	}
+
+	public void setOtpVerified(boolean otpVerified) {
+		this.otpVerified = otpVerified;
+	}
+
+	public Date getOtpExpiration() {
+		return otpExpiration;
+	}
+
+	public void setOtpExpiration(Date otpExpiration) {
+		this.otpExpiration = otpExpiration;
 	}
 
 	@Override
