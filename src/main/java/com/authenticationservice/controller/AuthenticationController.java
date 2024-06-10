@@ -3,6 +3,7 @@ package com.authenticationservice.controller;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,14 +37,20 @@ public class AuthenticationController {
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
-		Optional<User> authenticatedUser = authenticationService.authenticate(loginUserDto);
-		User user = authenticatedUser.orElseThrow(() -> new UsernameNotFoundException("Invalid login credentials"));
-		String jwtToken = jwtService.generateToken(user);
-		long expiresIn = jwtService.getExpirationTime();
-		LoginResponse loginResponse = new LoginResponse(jwtToken, expiresIn, user.getEmail(), user.getFirstName(),
-				user.getLastName(), user.getMobile(), user.getRole().getName().toString());
+	public ResponseEntity<?> authenticate(@RequestBody LoginUserDto loginUserDto) {
+		try {
+			Optional<User> authenticatedUser = authenticationService.authenticate(loginUserDto);
+			User user = authenticatedUser.orElseThrow(() -> new BadCredentialsException("Invalid login credentials"));
+			String jwtToken = jwtService.generateToken(user);
+			long expiresIn = jwtService.getExpirationTime();
+			LoginResponse loginResponse = new LoginResponse(jwtToken, expiresIn, user.getEmail(), user.getFirstName(),
+					user.getLastName(), user.getMobile(), user.getRole().getName().toString());
 
-		return ResponseEntity.ok(loginResponse);
+			return ResponseEntity.ok(loginResponse);
+		} catch (BadCredentialsException ex) {
+			return ResponseEntity.status(401).body("Invalid email or password."); // Return 401 status code
+		} catch (UsernameNotFoundException ex) {
+			return ResponseEntity.status(401).body("Invalid email or password."); // Return 401 status code
+		}
 	}
 }
